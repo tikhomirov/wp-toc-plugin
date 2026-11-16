@@ -81,7 +81,7 @@ function insert_table_of_contents($content)
     // declare local variable
     $link_list = '';
     // loop through $heading_results
-    for ($i = 0; $i < $num_match;  $i++) {
+    for ($i = 0; $i < $num_match; $i++) {
 
         $id = sanitize_title($heading_results[4][$i]);
 
