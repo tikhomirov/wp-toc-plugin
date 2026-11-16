@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Post Table of Content
  * Description: Plugin make auto insert toc to post content. !Required add css to theme. Also, you can use: <code>&lt;!--insert-toc--&gt;</code> or <code>[toc]</code>
@@ -14,21 +15,21 @@
  * Bootstrap 5 required (css)
  * How to use: Plugin make auto insert toc to post content after plugin has been activated. !Required add css to theme.
  */
+defined('ABSPATH') or exit('Nothing here!');
 
-defined( 'ABSPATH' ) or die( 'Nothing here!' );
-
-add_action( 'init', function () {
+add_action('init', function () {
     load_plugin_textdomain('toc', false, dirname(plugin_basename(__FILE__)) . '/languages');
 });
 
-add_filter('the_content', function ($content){
+add_filter('the_content', function ($content) {
     return '<!--insert-toc-->' . $content;
-},11);
+}, 11);
 
 // declare a function and pass the $content as an argument
-function insert_table_of_contents($content) {
+function insert_table_of_contents($content)
+{
 
-    if(!is_singular('post')){
+    if (! is_singular('post')) {
         return $content;
     }
 
@@ -44,7 +45,7 @@ function insert_table_of_contents($content) {
 
     // return the $content if
     // $comment_found and $fixed_location are false
-    if (!$fixed_location && !$comment_found) {
+    if (! $fixed_location && ! $comment_found) {
         return $content;
     }
 
@@ -59,7 +60,7 @@ function insert_table_of_contents($content) {
     }
 
     // regex to match all HTML heading elements 2-6
-    $regex = "~(<h([2-6]))(.*?>(.*)</h[2-6]>)~";
+    $regex = '~(<h([2-6]))(.*?>(.*)</h[2-6]>)~';
 
     // preg_match_all() searches the $content using $regex patterns and
     // returns the results to $heading_results[]
@@ -73,14 +74,14 @@ function insert_table_of_contents($content) {
 
     // return $content if less than 3 heading exist in the $content
     $num_match = count($heading_results[0]);
-    if($num_match < 3) {
+    if ($num_match < 3) {
         return $content;
     }
 
     // declare local variable
-    $link_list = "";
+    $link_list = '';
     // loop through $heading_results
-    for ($i = 0; $i < $num_match; ++ $i) {
+    for ($i = 0; $i < $num_match;  $i++) {
 
         $id = sanitize_title($heading_results[4][$i]);
 
@@ -94,16 +95,16 @@ function insert_table_of_contents($content) {
         $content = str_replace($old_heading, $new_heading, $content);
 
         $modified = $heading_results[2][$i] - 1;
-        if( !in_array(2, $heading_results[2]) ){
+        if (! in_array(2, $heading_results[2])) {
             $modified = $heading_results[2][$i] - 2;
-            if( !in_array(3, $heading_results[2]) ){
+            if (! in_array(3, $heading_results[2])) {
                 $modified = $heading_results[2][$i] - 3;
             }
         }
 
         // generate links for each heading element
         // each link points to an anchor
-        $link_list .= "<li class='level-" . $modified . "'><a href='#$id' >" . strip_tags($heading_results[4][$i]) . "</li></a>";
+        $link_list .= "<li class='level-" . $modified . "'><a href='#$id' >" . strip_tags($heading_results[4][$i]) . '</li></a>';
     }
 
     // opening nav tag
@@ -111,8 +112,8 @@ function insert_table_of_contents($content) {
     // closing nav tag
     $end_nav = '</div></nav>';
     // title
-    $title = '<div class="accordion-header" id="toc-heading"><button type="button" data-bs-toggle="collapse" data-bs-target="#toc-content" class="accordion-button">'.
-        esc_html__('Table of Content', 'toc').'</button></div>';
+    $title = '<div class="accordion-header" id="toc-heading"><button type="button" data-bs-toggle="collapse" data-bs-target="#toc-content" class="accordion-button">' .
+        esc_html__('Table of Content', 'toc') . '</button></div>';
 
     // wrap links in '<ul>' element
     $link_list = '<div id="toc-content" class="accordion-content bg-light accordion-collapse collapse show" data-bs-parent="#toc" aria-labelledby="toc-heading"><ol class="accordion-body">' .
@@ -124,22 +125,23 @@ function insert_table_of_contents($content) {
     // if $fixed_location is true and
     // $comment_found is false
     // insert the table of contents at a fixed location
-    if($fixed_location && !$comment_found) {
+    if ($fixed_location && ! $comment_found) {
         // location of first paragraph
-        $first_paragraph = strpos($content, '</p>', 0) + 4;
+        $first_paragraph = mb_strpos($content, '</p>', 0) + 4;
         // location of second paragraph
-        $second_paragraph = strpos($content, '</p>', $first_paragraph);
+        $second_paragraph = mb_strpos($content, '</p>', $first_paragraph);
+
         // insert $table_of_contents after $second_paragraph
-        return substr_replace($content, $table_of_contents, $second_paragraph + 4 , 0);
+        return substr_replace($content, $table_of_contents, $second_paragraph + 4, 0);
     }
     // if $fixed_location is false and
     // $comment_found is true
-    else {
-        // replace $html_comment with the $table_of_contents
-        return str_replace($html_comment, $table_of_contents, $content);
-    }
+
+    // replace $html_comment with the $table_of_contents
+    return str_replace($html_comment, $table_of_contents, $content);
+
 }
 // pass the function to the content add_filter hook
 add_filter('the_content', 'insert_table_of_contents', 100);
 
-add_shortcode('toc', fn($atts) => '<!--insert-toc-->');
+add_shortcode('toc', fn ($atts) => '<!--insert-toc-->');
